@@ -8,6 +8,11 @@ class Book {
         string title;
         string author;
 
+        Book(string title, string author) {
+            this -> title = title;
+            this -> author = author;
+        }
+
         void readBook() {
             cout << "Reading " << this -> title + " by " + this -> author << endl;
         }
@@ -15,9 +20,7 @@ class Book {
 
 int main() {
 
-    Book book1;
-    book1.title = "Harry Potter";
-    book1.author = "JK Rowling";
+    Book book1("Harry Potter", "JK Rowling");
 
     book1.readBook();
 
