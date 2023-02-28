@@ -5,6 +5,7 @@
 #include<vector>
 #include<iostream>
 #include<algorithm>
+#include<typeinfo>
 
 
 
@@ -29,10 +30,10 @@ inline void moveDown(int& y, int& x) {
 }
 
 void renderSnake(int& y, int& x) {
-    mvaddstr(y, x, "xxx");
+    mvaddstr(y, x, "x");
     refresh();
     mvaddstr(y, x, " ");
-    move(0, x + 1);
+    // move(0, x + 1);
 }
 
 
@@ -73,7 +74,7 @@ int main() {
                 break;
 
             case KEY_RIGHT:
-                moveLeft(y, x);
+                moveRight(y, x);
                 lastMove = moveRight;
                 refresh();
                 break;
@@ -88,7 +89,7 @@ int main() {
         
         // mvaddstr(0, pos + 1, "x");
 
-        sleepFor(90);
+        sleepFor(50);
     }
 
     getch();
