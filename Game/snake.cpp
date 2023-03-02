@@ -2,11 +2,16 @@
 #include<thread>
 #include<chrono>
 #include<string>
-#include<vector>
+#include<queue>
 #include<iostream>
 #include<algorithm>
 #include<typeinfo>
 
+
+struct BodyPart {
+    int y;
+    int x;
+};
 
 
 inline void sleepFor(int ms) {
@@ -29,28 +34,37 @@ inline void moveDown(int& y, int& x) {
     y++;
 }
 
-void renderSnake(int& y, int& x) {
-    mvaddstr(y, x, "x");
+void renderSnake(int& y, int& x, int& length, std::queue<BodyPart>& body) {
+
+    BodyPart limb = {.y=y, .x=x};
+    body.push(limb);
+    mvaddstr(limb.y, limb.x, "x");
     refresh();
-    mvaddstr(y, x, " ");
-    // move(0, x + 1);
+
+    if (body.size() >= length) {
+        BodyPart tail = body.front();
+        mvaddstr(tail.y, tail.x, " ");
+        body.pop();
+    }
 }
 
 
 int main() {
-
-    int x, y;
-    int keyPressed;
-
-    void (*lastMove)(int&, int&) = &moveRight;
 
     initscr();
     nodelay(stdscr, true);
     keypad(stdscr, true);
     // wborder(stdscr, '|', '|', '-', '-', '+', '+', '+', '+');
 
-    getyx(stdscr, y, x);
-    // getmaxyx(stdscr, y, x);
+    int x, y, snakeLength = 10;
+    int keyPressed;
+    std::queue<BodyPart> snakeBody;
+    
+    getmaxyx(stdscr, y, x);
+    y /= 2;
+    x /= 2;
+
+    void (*lastMove)(int&, int&) = &moveRight;
 
     while ( (keyPressed = getch()) != 27) {
 
@@ -85,7 +99,7 @@ int main() {
         }
 
         
-        renderSnake(y, x);
+        renderSnake(y, x, snakeLength, snakeBody);
         
         // mvaddstr(0, pos + 1, "x");
 
