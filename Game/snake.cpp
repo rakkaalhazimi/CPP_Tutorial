@@ -68,29 +68,44 @@ int main() {
 
     while ( (keyPressed = getch()) != 27) {
 
+        mvprintw(1, 1, "x: %d, y: %d", x, y);
+
         switch (keyPressed) {
             case KEY_UP:
+                if (lastMove == moveDown) {
+                    lastMove(y, x);
+                    break;
+                }
                 moveUp(y, x);
                 lastMove = moveUp;
                 refresh();
                 break;
 
             case KEY_DOWN:
+                if (lastMove == moveUp) {
+                    lastMove(y, x);
+                    break;
+                }
                 moveDown(y, x);
                 lastMove = moveDown;
-                refresh();
                 break;
 
             case KEY_LEFT:
+                if (lastMove == moveRight) {
+                    lastMove(y, x);
+                    break;
+                }
                 moveLeft(y, x);
                 lastMove = moveLeft;
-                refresh();
                 break;
 
             case KEY_RIGHT:
+                if (lastMove == moveLeft) {
+                    lastMove(y, x);
+                    break;
+                }
                 moveRight(y, x);
                 lastMove = moveRight;
-                refresh();
                 break;
             
             default:
@@ -102,7 +117,6 @@ int main() {
         renderSnake(y, x, snakeLength, snakeBody);
         
         // mvaddstr(0, pos + 1, "x");
-
         sleepFor(50);
     }
 
