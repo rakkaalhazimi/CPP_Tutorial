@@ -180,6 +180,8 @@ int main() {
         if (isCollide(y, x, snakeBody)) {
             nodelay(stdscr, false);
             mvprintw(maxY / 2 + height / 2 + 3, maxX / 2 + height / 2 + 3, "Game Over, Press Esc to Exit");
+            noecho();
+            getch();
             break;
         }
 
