@@ -122,7 +122,7 @@ void pinballBallEvent(
                 
             direction_y = -1;
         
-        } else if (*ball_y >= *screen_height - 1) {
+        } else if (*ball_y <= 1) {
             direction_y = 1;
         }
 
