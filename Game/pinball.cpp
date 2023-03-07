@@ -5,6 +5,9 @@
 #include<vector>
 
 
+#define KEYBOARD_ENTER 10
+
+
 inline void sleepFor(int ms) {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
@@ -18,6 +21,68 @@ WINDOW *create_new_win(int height, int width, int start_Y, int start_X) {
 
     return local_win;
 }
+
+
+void showStartScreen() {
+    int y, x; 
+    getmaxyx(stdscr, y, x);
+    int key_pressed;
+    std::string game_title = "Supa Hot Pinball";
+    std::string start_text = "Start";
+    std::string quit_text = "Quit";
+
+    int start_y = y / 2;
+    int quit_y = y / 1.9;
+    int point_y;
+    int point_x = x / 2 - 5;
+
+    mvwprintw(stdscr, y / 2.5, x / 2 - game_title.size() / 2, game_title.c_str());
+    mvwprintw(stdscr, start_y, x / 2 - start_text.size() / 2, "Start");
+    mvwprintw(stdscr, quit_y, x / 2 - quit_text.size() / 2, "Quit");
+
+    int current_choice = 0;
+    int last_choice = current_choice;
+    int n_choice = 2;
+    int choices[n_choice] = {start_y, quit_y};
+    point_y = choices[current_choice];
+
+    do {
+        switch(key_pressed) {
+            case KEY_UP:
+                last_choice = current_choice;
+                current_choice--;
+                if (current_choice < 0) {
+                    current_choice = n_choice;
+                }
+                break;
+
+            case KEY_DOWN:
+                last_choice = current_choice;
+                current_choice++;
+                if (current_choice > n_choice) {
+                    current_choice = 0;
+                }
+                break;
+
+            case KEYBOARD_ENTER:
+                if (choices[current_choice] == quit_y) {
+                    exit(0);
+            
+                } else if (choices[current_choice] == start_y) {
+                    return;
+                }
+                break;
+        }
+
+        mvprintw(choices[last_choice], point_x, " ");
+        mvprintw(choices[current_choice], point_x, ">");
+        refresh();
+
+        key_pressed = getch();
+
+    } while (true);
+}
+
 
 void showGameScore(int y, int x, WINDOW *window) {
     mvwprintw(window, y, x, "x: %2d, y: %2d", x, y);
@@ -157,6 +222,9 @@ int main() {
     keypad(stdscr, true);                       // Use keypad
     curs_set(0);                                // Invisible cursor
     resize_term(screen_height, screen_width);   // Resize terminal
+
+    // Start game screen
+    showStartScreen();
 
     WINDOW *score_win = create_new_win(score_screen_height, screen_width, 0, 0);
     WINDOW *pinball_win = create_new_win(pinball_screen_height, pinball_screen_width, score_screen_height, 0);
