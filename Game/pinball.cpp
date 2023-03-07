@@ -59,7 +59,7 @@ void showStartScreen() {
             case KEY_DOWN:
                 last_choice = current_choice;
                 current_choice++;
-                if (current_choice > n_choice) {
+                if (current_choice > n_choice - 1) {
                     current_choice = 0;
                 }
                 break;
