@@ -181,14 +181,25 @@ void pinballBallEvent(
             direction_x = 1;
         }
 
-        // Ball hit the bar or the ceiling
-        if (*ball_x >= *bar_x &&
+        // Ball hit the bar
+        if (*ball_x >= *bar_x - 1 &&
             *ball_x <= *bar_x + bar->size() &&
             *ball_y == *bar_y - 1) {
-                
+
             direction_y = -1;
+
+            // Change direction based on the tip of the bar hitted
+            if (*ball_x < *bar_x + bar->size() / 2) {
+                direction_x = -1;
+            
+            } else if (*ball_x > *bar_x + bar->size() / 2) {
+                direction_x = 1;
+            }
+        }  
+
         
-        } else if (*ball_y <= 1) {
+        // Ball hit the ceiling
+        if (*ball_y <= 1) {
             direction_y = 1;
         }
 
