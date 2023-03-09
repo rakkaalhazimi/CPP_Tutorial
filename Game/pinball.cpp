@@ -1,5 +1,6 @@
 #include<chrono>
 #include<curses.h>
+#include<panel.h>
 #include<string>
 #include<thread>
 #include<vector>
@@ -36,9 +37,15 @@ void showStartScreen() {
     int point_y;
     int point_x = x / 2 - 5;
 
-    mvwprintw(stdscr, y / 2.5, x / 2 - game_title.size() / 2, game_title.c_str());
-    mvwprintw(stdscr, start_y, x / 2 - start_text.size() / 2, "Start");
-    mvwprintw(stdscr, quit_y, x / 2 - quit_text.size() / 2, "Quit");
+    WINDOW *window = newwin(y, x, 0, 0);
+    PANEL *menu_panel = new_panel(window);
+    update_panels();
+    doupdate();
+
+    mvwprintw(window, y / 2.5, x / 2 - game_title.size() / 2, game_title.c_str());
+    mvwprintw(window, start_y, x / 2 - start_text.size() / 2, "Start");
+    mvwprintw(window, quit_y, x / 2 - quit_text.size() / 2, "Quit");
+    wrefresh(window);
 
     int current_choice = 0;
     int last_choice = current_choice;
@@ -74,13 +81,17 @@ void showStartScreen() {
                 break;
         }
 
-        mvprintw(choices[last_choice], point_x, " ");
-        mvprintw(choices[current_choice], point_x, ">");
-        refresh();
+        mvwprintw(window, choices[last_choice], point_x, " ");
+        mvwprintw(window, choices[current_choice], point_x, ">");
+        wrefresh(window);
 
         key_pressed = getch();
 
     } while (true);
+
+    del_panel(menu_panel);
+    update_panels();
+    doupdate();
 }
 
 
