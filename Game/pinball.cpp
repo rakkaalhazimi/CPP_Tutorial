@@ -17,6 +17,7 @@ const int SCORE_SCREEN_WIDTH = SCREEN_WIDTH;
 const int PINBALL_SCREEN_HEIGHT = SCREEN_HEIGHT - SCORE_SCREEN_HEIGHT;
 const int PINBALL_SCREEN_WIDTH = SCREEN_WIDTH;
 const std::string PINBALL_BAR = "<===>";
+const std::string BLOCK_1 = "@";
 
 
 inline void sleepFor(int ms) {
@@ -189,7 +190,7 @@ void moveBall(
         } else if (ball_x > bar_x + PINBALL_BAR.size() / 2) {
             if (velocity_x < 0) velocity_x *= -1;
         }  
-}
+    }
 
     // Update ball coordinates
     ball_y += velocity_y;
@@ -197,22 +198,42 @@ void moveBall(
 
     // Render ball
     // Use ceiling when velocity is more than 0
+    float next_ball_y = ball_y, 
+          next_ball_x = ball_x, 
+          next_last_ball_y = last_ball_y, 
+          next_last_ball_x = last_ball_x;
+
     if (velocity_x > 0 && velocity_y > 0) {
-        renderBall(std::ceil(ball_y), std::ceil(ball_x), std::ceil(last_ball_y), std::ceil(last_ball_x), window);
+        next_ball_y = std::ceil(ball_y);
+        next_ball_x = std::ceil(ball_x);
+        next_last_ball_y = std::ceil(last_ball_y);
+        next_last_ball_x = std::ceil(last_ball_x);
     
     } else if (velocity_x > 0) {
-        renderBall(ball_y, std::ceil(ball_x), last_ball_y, std::ceil(last_ball_x), window);
+        next_ball_x = std::ceil(ball_x);
+        next_last_ball_x = std::ceil(last_ball_x);
 
     } else if (velocity_y > 0) {
-        renderBall(std::ceil(ball_y), ball_x, std::ceil(last_ball_y), last_ball_x, window);
-
-    } else {
-        renderBall(ball_y, ball_x, last_ball_y, last_ball_x, window);
+        next_ball_y = std::ceil(ball_y);
+        next_last_ball_y = std::ceil(last_ball_y);
     }
+
+    renderBall(next_ball_y, next_ball_x, next_last_ball_y, next_last_ball_x, window);
 
     // Update last ball coordinate
     last_ball_y = ball_y;
     last_ball_x = ball_x;
+}
+
+
+void renderBlocks(int start_y, int start_x, int lines, int cols, WINDOW *window) {
+
+    for (int i = 0; i < lines; i++) {
+        for (int j = 0; j < cols; j++) {
+            mvwaddstr(window, start_y + i, start_x + j, BLOCK_1.c_str());
+        }
+    }
+    wrefresh(window);
 }
 
 
@@ -249,6 +270,9 @@ int main() {
     ball_x = max_pinball_x / 2;
     ball_velocity_y = .25;
     ball_velocity_x = .25;
+
+    // Render blocks
+    renderBlocks(3, 3, 4, PINBALL_SCREEN_WIDTH - 6, pinball_win);
 
 
     while (true) {
