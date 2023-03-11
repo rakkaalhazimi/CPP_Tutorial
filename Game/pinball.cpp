@@ -1,3 +1,4 @@
+#include<cmath>
 #include<chrono>
 #include<curses.h>
 #include<panel.h>
@@ -7,6 +8,15 @@
 
 
 #define KEYBOARD_ENTER 10
+
+const int FPS = 60;
+const int SCREEN_HEIGHT = 40;
+const int SCREEN_WIDTH = 70;
+const int SCORE_SCREEN_HEIGHT = SCREEN_HEIGHT * 0.1;
+const int SCORE_SCREEN_WIDTH = SCREEN_WIDTH;
+const int PINBALL_SCREEN_HEIGHT = SCREEN_HEIGHT - SCORE_SCREEN_HEIGHT;
+const int PINBALL_SCREEN_WIDTH = SCREEN_WIDTH;
+const std::string PINBALL_BAR = "<===>";
 
 
 inline void sleepFor(int ms) {
@@ -95,196 +105,176 @@ void showStartScreen() {
 }
 
 
-void showGameScore(int y, int x, WINDOW *window) {
-    mvwprintw(window, y, x, "x: %2d, y: %2d", x, y);
+void showGameScore(float y, float x, WINDOW *window) {
+    mvwprintw(window, 1, 1, "x: %2.2f, y: %2.2f", x, y);
     wrefresh(window);
 }
 
 
-void controlBar(
-        int& y, 
-        int& x,
-        int& screen_height,
-        int& screen_width,
+void moveBar(
+        int& bar_y, 
+        int& bar_x, 
         int& key_pressed, 
-        std::string *bar, 
         WINDOW *window) {
+
+    // Control bar
+    key_pressed = getch();
 
     switch(key_pressed) {
-        case KEY_LEFT:
-            if (x <= 1) break;
-            x--;
-            mvwaddstr(window, y, x + bar->size(), " ");
-            break;
+    case KEY_LEFT:
+        if (bar_x <= 1) break;
+        bar_x--;
+        mvwaddstr(window, bar_y, bar_x + PINBALL_BAR.size(), " ");
+        break;
 
-        case KEY_RIGHT:
-            if ((x + bar->size() + 1) >= screen_width) break;
-            x++;
-            mvwaddstr(window, y, x - 1, " ");
-            break;
+    case KEY_RIGHT:
+        if ((bar_x + PINBALL_BAR.size() + 1) >= PINBALL_SCREEN_WIDTH) break;
+        bar_x++;
+        mvwaddstr(window, bar_y, bar_x - 1, " ");
+        break;
     }
+
+    // Render bar
+    mvwprintw(window, bar_y, bar_x, PINBALL_BAR.c_str());
+    wrefresh(window);
 }
 
 
-void pinballBarEvent(
-        int *bar_y, 
-        int *bar_x, 
-        int *screen_height, 
-        int *screen_width, 
-        int *key_pressed, 
-        std::string *bar, 
+void renderBall(
+        float ball_y, 
+        float ball_x, 
+        float last_ball_y, 
+        float last_ball_x, 
         WINDOW *window) {
 
-    do {
-        // Control bar
-        switch(*key_pressed) {
-        case KEY_LEFT:
-            if (*bar_x <= 1) break;
-            (*bar_x)--;
-            mvwaddstr(window, *bar_y, *bar_x + bar->size(), " ");
-            break;
-
-        case KEY_RIGHT:
-            if ((*bar_x + bar->size() + 1) >= *screen_width) break;
-            (*bar_x)++;
-            mvwaddstr(window, *bar_y, *bar_x - 1, " ");
-            break;
-        }
-        
-        // Render bar
-        mvwprintw(window, *bar_y, *bar_x, bar->c_str());
-        wrefresh(window);
-
-    } while ( (*key_pressed = getch()) != 27);
+    mvwaddstr(window, last_ball_y, last_ball_x, " ");
+    mvwaddstr(window, ball_y, ball_x, "o");
+    wrefresh(window);
 }
 
 
-void pinballBallEvent(
-        int *ball_y, 
-        int *ball_x,
-        int *bar_y,
-        int *bar_x,
-        std::string *bar,
-        int *screen_height, 
-        int *screen_width, 
+void moveBall(
+        float& ball_y, 
+        float& ball_x,
+        float& last_ball_y, 
+        float& last_ball_x,
+        float& velocity_y,
+        float& velocity_x,
+        int& bar_y,
+        int& bar_x,
         WINDOW *window) {
 
-    int last_y;
-    int last_x;
-    int direction_y = 1;
-    int direction_x = 1;
-    float increment_y = 0;
+    // Ball hit right or left screen
+    if (ball_x >= PINBALL_SCREEN_WIDTH - 2 || ball_x <= 1) {
+        velocity_x *= -1;
+    }
 
-    while (true) {
-        // Render ball
-        mvwaddstr(window, last_y, last_x, " ");
-        mvwaddstr(window, *ball_y, *ball_x, "o");
-        wrefresh(window);
+    // Ball hit the ceiling or the bottom of the screen
+    if (ball_y >= PINBALL_SCREEN_HEIGHT - 2 || ball_y <= 1) {
+        velocity_y *= -1;
+    } 
 
-        last_y = *ball_y;
-        last_x = *ball_x;
+    // Ball hit the bar
+    if (ball_x >= bar_x - 1 &&
+        ball_x <= bar_x + PINBALL_BAR.size() &&
+        ball_y == bar_y - 1) {
 
-        // Ball hit right or left screen
-        if (*ball_x >= *screen_width - 2) {
-            direction_x = -1;
-        
-        } else if (*ball_x <= 1) {
-            direction_x = 1;
-        }
+        velocity_y *= -1;
 
-        // Ball hit the bar
-        if (*ball_x >= *bar_x - 1 &&
-            *ball_x <= *bar_x + bar->size() &&
-            *ball_y == *bar_y - 1) {
-
-            direction_y = -1;
-
-            // Change direction based on the tip of the bar hitted
-            if (*ball_x < *bar_x + bar->size() / 2) {
-                direction_x = -1;
+        // Change direction based on the tip of the bar hitted
+        if (ball_x < bar_x + PINBALL_BAR.size() / 2) {
+            if (velocity_x > 0) velocity_x *= -1;
             
-            } else if (*ball_x > *bar_x + bar->size() / 2) {
-                direction_x = 1;
-            }
+        
+        } else if (ball_x > bar_x + PINBALL_BAR.size() / 2) {
+            if (velocity_x < 0) velocity_x *= -1;
         }  
+}
 
-        
-        // Ball hit the ceiling
-        if (*ball_y <= 1) {
-            direction_y = 1;
-        }
+    // Update ball coordinates
+    ball_y += velocity_y;
+    ball_x += velocity_x;
 
-        // Velocity of vertical movement
-        // if (ball_x % 3 == 2) {
-            // ball_y++;
-        // }
-        
-        *ball_y += (direction_y * 1);
-        *ball_x += (direction_x * 1);
+    // Render ball
+    // Use ceiling when velocity is more than 0
+    if (velocity_x > 0 && velocity_y > 0) {
+        renderBall(std::ceil(ball_y), std::ceil(ball_x), std::ceil(last_ball_y), std::ceil(last_ball_x), window);
+    
+    } else if (velocity_x > 0) {
+        renderBall(ball_y, std::ceil(ball_x), last_ball_y, std::ceil(last_ball_x), window);
 
-        sleepFor(200);
+    } else if (velocity_y > 0) {
+        renderBall(std::ceil(ball_y), ball_x, std::ceil(last_ball_y), last_ball_x, window);
+
+    } else {
+        renderBall(ball_y, ball_x, last_ball_y, last_ball_x, window);
     }
+
+    // Update last ball coordinate
+    last_ball_y = ball_y;
+    last_ball_x = ball_x;
 }
 
 
 
 int main() {
 
-    int bar_y, bar_x, ball_y, ball_x;
-    int key_pressed;
-    int screen_height = 40;
-    int screen_width = 70;
-    int score_screen_height = screen_height * 0.1;
-    int score_screen_width = screen_width;
-    int pinball_screen_height = screen_height - score_screen_height;
-    int pinball_screen_width = screen_width;
-    std::string pinball_bar = "<===>";
+    int max_pinball_y, max_pinball_x, bar_y, bar_x, key_pressed;
+    float ball_y, ball_x, last_ball_y, last_ball_x, ball_direction_y, ball_direction_x, ball_velocity_y, ball_velocity_x;
 
     initscr();
-    nodelay(stdscr, false);                     // Getch will block the program
-    keypad(stdscr, true);                       // Use keypad
-    curs_set(0);                                // Invisible cursor
-    resize_term(screen_height, screen_width);   // Resize terminal
+    nodelay(stdscr, true);                              // Getch won't block the program
+    keypad(stdscr, true);                               // Use keypad
+    curs_set(0);                                        // Invisible cursor
+    resize_term(SCREEN_HEIGHT, PINBALL_SCREEN_WIDTH);   // Resize terminal
 
     // Start game screen
     showStartScreen();
 
-    WINDOW *score_win = create_new_win(score_screen_height, screen_width, 0, 0);
-    WINDOW *pinball_win = create_new_win(pinball_screen_height, pinball_screen_width, score_screen_height, 0);
+    // Score and Pinball Panel
+    WINDOW *score_win = create_new_win(SCORE_SCREEN_HEIGHT, SCORE_SCREEN_WIDTH, 0, 0);
+    PANEL *score_panel = new_panel(score_win);
 
-    bar_y = pinball_screen_height - 4;
-    bar_x = pinball_screen_width / 2;
+    WINDOW *pinball_win = create_new_win(PINBALL_SCREEN_HEIGHT, PINBALL_SCREEN_WIDTH, SCORE_SCREEN_HEIGHT, 0);
+    PANEL *pinball_panel = new_panel(pinball_win);
 
-    // Thread for bar event
-    std::thread bar_event(
-        pinballBarEvent, 
-        &bar_y, 
-        &bar_x, 
-        &pinball_screen_height, 
-        &pinball_screen_width, 
-        &key_pressed, 
-        &pinball_bar,
-        pinball_win
-    );
+    update_panels();
+    doupdate();
 
-    ball_y = pinball_screen_height / 2;
-    ball_x = pinball_screen_width / 2;
+    // Initial bar position; ball position, direction and velocity.
+    getmaxyx(pinball_win, max_pinball_y, max_pinball_x);
+    bar_y = max_pinball_y - 4;
+    bar_x = max_pinball_x / 2;
+    ball_y = max_pinball_y / 2;
+    ball_x = max_pinball_x / 2;
+    ball_velocity_y = .25;
+    ball_velocity_x = .25;
 
-    // Thread for ball event
-    std::thread ball_event(
-        pinballBallEvent, 
-        &ball_y, 
-        &ball_x,
-        &bar_y,
-        &bar_x,
-        &pinball_bar,
-        &pinball_screen_height, 
-        &pinball_screen_width, 
-        pinball_win
-    );
 
-    showGameScore(1, 1, score_win);
-    bar_event.join();
+    while (true) {
+        
+        moveBall(
+            ball_y, 
+            ball_x, 
+            last_ball_y, 
+            last_ball_x, 
+            ball_velocity_y, 
+            ball_velocity_x,
+            bar_y, 
+            bar_x, 
+            pinball_win);
+
+        moveBar(
+            bar_y,
+            bar_x,
+            key_pressed,
+            pinball_win
+        );
+            
+        showGameScore(ball_y, ball_x, score_win);
+
+        sleepFor(1000 / FPS);
+    }
 
     getch();
     endwin();
