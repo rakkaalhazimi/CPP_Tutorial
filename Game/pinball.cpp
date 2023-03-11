@@ -192,6 +192,13 @@ void moveBall(
         }  
     }
 
+    // Ball hit the blocks
+    chtype next_char = mvwinch(window, ball_y + velocity_y, ball_x + velocity_x);
+    if (next_char == '@') {
+        mvwaddch(window, ball_y + velocity_y, ball_x + velocity_x, ' ');
+        velocity_y *= -1;
+    }
+
     // Update ball coordinates
     ball_y += velocity_y;
     ball_x += velocity_x;
@@ -217,6 +224,8 @@ void moveBall(
         next_ball_y = std::ceil(ball_y);
         next_last_ball_y = std::ceil(last_ball_y);
     }
+
+    
 
     renderBall(next_ball_y, next_ball_x, next_last_ball_y, next_last_ball_x, window);
 
