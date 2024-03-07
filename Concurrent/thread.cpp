@@ -1,3 +1,9 @@
+// On Linux
+// g++ -o thread -pthread thread.cpp && ./thread
+
+// On Windows
+// cl /EHsc thread.cpp && .\thread.exe
+
 #include<iostream>
 #include<thread>
 
