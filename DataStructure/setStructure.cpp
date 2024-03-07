@@ -57,6 +57,28 @@ int main() {
     s4.erase(s4.find(5));
     cout << "Erase one: multiset" << "\n";
     cout << s4.count(5) << "\n"; // 2
+    
+    
+    // COMPARISON: check if two sets are similar
+    set<int> set1{1, 2, 3};
+    set<int> set2{3, 2, 1};
+    
+    if (set1 == set2)
+    {
+        cout << "Similar" << endl;
+        
+    } else 
+    {
+        cout << "Not Similar" << endl;
+    }
+    
+    
+    // ITERATION: iterate throught set
+    set<int> ages{20, 21, 22, 23};
+    for (set<int>::iterator iter = ages.begin(); iter != ages.end(); iter++)
+    {
+        cout << *iter << endl;
+    }
 
 
     return 0;
