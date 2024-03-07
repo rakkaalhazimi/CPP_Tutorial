@@ -28,6 +28,10 @@ class Rect {
             return temp;
         }
         
+        Rect operator<< (Rect& other) {
+            return other;
+        }
+        
 };
 
 
@@ -42,6 +46,10 @@ int main() {
     std::cout << unknownShape.w << std::endl;
     std::cout << unknownShape.h << std::endl;
     std::cout << unknownShape.area() << std::endl;
+    
+    Rect anomaliShape = (myShape << otherShape);
+    
+    
 
 
     return 0;
