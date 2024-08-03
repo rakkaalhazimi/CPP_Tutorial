@@ -28,7 +28,8 @@ class Rect {
             return temp;
         }
         
-        Rect operator<< (Rect& other) {
+        // Return the reference to avoid copy
+        Rect& operator<< (Rect& other) {
             return other;
         }
         
@@ -47,7 +48,8 @@ int main() {
     std::cout << unknownShape.h << std::endl;
     std::cout << unknownShape.area() << std::endl;
     
-    Rect anomaliShape = (myShape << otherShape);
+    Rect& anomaliShape = (myShape << otherShape);
+    std::cout << (&anomaliShape == &otherShape) << std::endl;
     
     
 
