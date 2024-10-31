@@ -33,6 +33,7 @@ int main(int argc, char const *argv[])
   // Static Initialization
   Waifu lappland("lappland");
   Waifu lappland = Waifu("lappland");
+  Waifu lappland = Waifu{"lappland"};  // Curly braces initialization, prevents narrowing
   
   // Dynamic Initialization
   Waifu *lappland = new Waifu("lappland");
