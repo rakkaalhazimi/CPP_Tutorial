@@ -79,7 +79,25 @@ int main() {
     {
         cout << *iter << endl;
     }
-
+    
+    // FIND: check if item is inside set
+    set<int> setCheck{1, 2, 3};
+    int item = 4;
+    bool isIn = setCheck.find(item) != setCheck.end();
+    cout << "Membership check: Is item '" << item << "' inside set: " << isIn << endl;
+    
+    
+    // FIND: check if the item inside a set is also inside another set
+    set<int> setCheck1{1, 2, 3, 4};
+    set<int> setCheck2{3, 4, 5, 6};
+    
+    cout << "Multiset Membership check" << endl;
+    for (set<int>::iterator iter = setCheck1.begin(); iter != setCheck1.end(); iter++)
+    {
+        bool isIn = setCheck2.find(*iter) != setCheck2.end();
+        cout << "Is item '" << *iter << "' inside set: " << isIn << endl;
+    }
+    
 
     return 0;
 }
