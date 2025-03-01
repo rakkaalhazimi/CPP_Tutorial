@@ -1,0 +1,5 @@
+corrupted size vs. prev_size
+when you allocated x bytes to p pointer, but somehow wind up beyond x bytes.
+
+free(): invalid pointer
+calling free to pointer that already freed
